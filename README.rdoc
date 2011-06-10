@@ -9,18 +9,18 @@ First of all you must install required gems.
 
   gem sources -a http://gemcutter.org
   sudo gem install google-spreadsheet-ruby
-  sudo gem install google-spreadsheet-ruby
+  sudo gem install data-mapper
 
 Next you must install required adapter.
 
-  # A Sqlite3 connection to a persistent database
-  DataMapper.setup(:default, 'sqlite:///path/to/project.db')
+  # sqlite3
+  gem install dm-sqlite-adapter
 
   # A MySQL connection:
-  DataMapper.setup(:default, 'mysql://localhost/the_database_name')
+  gem install dm-mysql-adapter
 
   # A Postgres connection:
-  DataMapper.setup(:default, 'postgres://localhost/the_database_name')
+  gem install dm-postgres-adapter
 
 Next you must copy config.yml.example, rename to config.yml and set to apropriate values
 
