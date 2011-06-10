@@ -1,0 +1,27 @@
+= PowerDNS-Gdocs
+
+Script for synchronization between gdocs and PowerDNS records in MySQL db.
+You can use google spreadsheet as UI for your DNS records in PowerDNS then.
+
+== Installation
+
+First of all you must install required gems.
+
+  gem sources -a http://gemcutter.org
+  sudo gem install google-spreadsheet-ruby
+  sudo gem install google-spreadsheet-ruby
+
+Next you must install required adapter.
+
+  # A Sqlite3 connection to a persistent database
+  DataMapper.setup(:default, 'sqlite:///path/to/project.db')
+
+  # A MySQL connection:
+  DataMapper.setup(:default, 'mysql://localhost/the_database_name')
+
+  # A Postgres connection:
+  DataMapper.setup(:default, 'postgres://localhost/the_database_name')
+
+Next you must copy config.yml.example, rename to config.yml and set to apropriate values
+
+
