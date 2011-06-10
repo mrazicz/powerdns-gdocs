@@ -24,4 +24,8 @@ Next you must install required adapter.
 
 Next you must copy config.yml.example, rename to config.yml and set to apropriate values
 
+== Usage
 
+  ruby pdns_gdoc.rb
+
+Script go over document and add new record into PowerDNS db.

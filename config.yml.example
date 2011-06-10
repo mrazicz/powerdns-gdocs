@@ -1,0 +1,18 @@
+# google account info
+gmail:
+  user: "example@gmail.com"
+  pass: "gmail_password"
+  key: "spreadsheet_key"
+
+# db info
+db:
+  adapter: "mysql_or_postgres_or_sqlite3"
+  database: "name_of_db"
+  host: "localhost" # without '/' at the end!
+  username: "root"
+  password: "root"
+  encoding: "utf8"
+  
+# pdns config
+pdns:
+  template: "name_of_template" # template that is used for generating record
