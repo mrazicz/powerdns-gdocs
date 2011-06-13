@@ -28,14 +28,7 @@ db = PdnsController.new(config["db"], config["pdns"])
 resolver = Resolv::DNS.new(:nameserver => "127.0.0.1")
 
 records.each do |key, record|
-  if ARGV[0] == "--checkreg" || ARGV[0] == "-c"
-    r = db.check_reg(record)
-    if r
-      gdoc.set_registro(key, "yes")
-    else
-      gdoc.set_registro(key, "NO")
-    end
-  else
+  unless ARGV[0] == "--checkreg" || ARGV[0] == "-c"
     db.del(record)  if ARGV[0] == "--force" || ARGV[0] == "-f"
 
     r = db.add(record)
@@ -60,6 +53,15 @@ records.each do |key, record|
       else
         gdoc.set_status(key, "failed")
       end
+    end
+  end
+  
+  if ARGV[0] == "--checkreg" || ARGV[0] == "-c" || ARGV[0] == "--force" || ARGV[0] == "-f"
+    r = db.check_reg(record)
+    if r
+      gdoc.set_registro(key, "yes")
+    else
+      gdoc.set_registro(key, "NO")
     end
   end
 
