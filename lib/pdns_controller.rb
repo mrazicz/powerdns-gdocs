@@ -44,6 +44,7 @@ class PdnsController
     end
   end
 
+  # registration check
   def check_reg(record)
     if exist?(record[0])
       r = Resolv::DNS.new
