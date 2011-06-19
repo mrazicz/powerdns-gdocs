@@ -102,7 +102,7 @@ class PdnsController
     r.type = template.type
     
     if template.type == "A" || template.type == "AAAA"
-      if record[1].any?
+      unless record[1].empty?
         r.content = record[1]
       else 
         r.content = template.content

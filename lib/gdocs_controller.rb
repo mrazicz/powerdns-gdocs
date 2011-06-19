@@ -47,6 +47,11 @@ class GdocsController
   def set_registro(row, status = "unavailable")
     @ws[row, 4] = status
   end
+  
+  # set IP
+  def set_ip(row, ip)
+    @ws[row, 2] = ip
+  end
 
   # save spreadsheet
   def save

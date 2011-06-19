@@ -11,6 +11,8 @@ $LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib') unless $LOAD_PATH.include?(F
 # author homepage:  https://github.com/mrazicz
 
 require "rubygems"
+require "bundler/setup"
+
 require "yaml"
 require "gdocs_controller"
 require "pdns_controller"
@@ -34,6 +36,7 @@ records.each do |key, record|
     r = db.add(record)
     
     gdoc.set_registro(key) unless r.nil?
+    gdoc.set_ip(key, record[1]) unless r.nil? 
 
     unless r.nil? || record[2] == "failed"
       succ = true

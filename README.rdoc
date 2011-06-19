@@ -5,24 +5,19 @@ You can use google spreadsheet as UI for your DNS records in PowerDNS then.
 
 == Installation
 
-First of all you must install required gems.
+* Install bundler
+  
+  gem install bundler
 
-  gem sources -a http://gemcutter.org
-  sudo gem install google-spreadsheet-ruby
-  sudo gem install data-mapper
+* Run bundle install. 
 
-Next you must install required adapter.
+  sudo bundle install
 
-  # sqlite3
-  gem install dm-sqlite-adapter
+  This script can work with three other databases (sqlite, postgres, mysql). Bundle will install adapters for all of these, but you can specify which adapters will not be installed. For example, if you want install only mysql adapter, use this:
 
-  # A MySQL connection:
-  gem install dm-mysql-adapter
+  sudo bundle install --without postgres sqlite
 
-  # A Postgres connection:
-  gem install dm-postgres-adapter
-
-Next you must copy config.yml.example, rename to config.yml and set to apropriate values
+* Copy config.yml.example, rename to config.yml and set to apropriate values
 
 == Usage
 
