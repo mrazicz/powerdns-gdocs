@@ -7,15 +7,15 @@ You can use google spreadsheet as UI for your DNS records in PowerDNS then.
 
 * Install bundler
   
-  gem install bundler
+    gem install bundler
 
 * Run bundle install. 
 
-  sudo bundle install
+    sudo bundle install
 
   This script can work with three other databases (sqlite, postgres, mysql). Bundle will install adapters for all of these, but you can specify which adapters will not be installed. For example, if you want install only mysql adapter, use this:
 
-  sudo bundle install --without postgres sqlite
+    sudo bundle install --without postgres sqlite
 
 * Copy config.yml.example, rename to config.yml and set to apropriate values
 
