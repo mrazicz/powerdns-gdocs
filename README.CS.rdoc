@@ -1,0 +1,49 @@
+== Použití
+
+Skript může pracovat ve 3 různých módech. Módy nelze mezi sebou kombinovat.
+
+=== Default mód
+
+Spuštění:
+
+  sudo ruby pdns_gdocs.rb
+
+V tomto módu skript projde všechny záznamy z dokumentu a ty které ještě nejsou v databázi přidá podle šablony. Ihned po přidání je nový záznam otestován DNS requestem v rámci localhostu. Poté jsou nastaveny sloupce v dokumentu na odpovídajíci hodnoty. 
+Pokud script narazí na záznam se statusem "failed" tak skript pouze ověří lokálním DNS dotazem zda se stav nezměnil a aktualizuje hodnotu v dokumentu. V tomto módu neprobíhá "kontrola registrátora".
+
+=== Force mód
+
+Spuštění:
+
+  sudo ruby pdns_gdocs.rb -f
+
+nebo
+
+  sudo ruby pdns_gdocs.rb --force
+
+V tomto módu skript prochází každý záznam. Pokud záznam již existuje, tak je smazán. Poté je záznam přidán do databáze podle šablony, otestován stav pomocí lokálního DNS dotazu a nakonec je globálním DNS requestem "kontrola registrátora". Rovněž jsou nastavovány aktualizovány sloupce v dokumentu.
+
+=== Checkreg mód
+
+Spuštění:
+
+  sudo ruby pdns_gdocs.rb -c
+
+nebo
+
+  sudo ruby pdns_gdocs.rb --checkreg
+
+V tomto módu probíhá pouze "kontrola registrátora" pro každý záznam a podle výsledku je aktualizován sloupec v dokumentu.
+
+== Formát dokumentu
+
+Pod pojmem dokument chápeme v této dokumentaci Google Spreadsheet.
+Formát dokumentu musí být dodržen jinak hrozí nesprávna funkčnost skriptu!
+
+Formát:
+* První dva řádky jsou skriptem ignorovány a můžou být použity jako hlavička.
+* 1. sloupec: název domény (povinné)
+* 2. sloupec: ip adresa pro A záznam (pokud není vyplněna použije se ip adresa ze šablony, do dokumentu ji skript zapíše)
+* 3. sloupec: "status" - indikuje zda je záznam v databázi funkční (vyplňuje resp. aktualizuje skript)
+* 4. sloupec: "kontrola registrátora" - políčko indikuje zda DNS registrátora odkazuje správně na tuto DNS (vyplňuje resp. aktualizuje skript)
+
