@@ -1,6 +1,6 @@
 class GdocsController
   require "google_spreadsheet"
-  
+
   # create Object
   # param account ... hash with account info(user, pass, spreadsheet key)
   def initialize(user, pass, key)
@@ -13,7 +13,7 @@ class GdocsController
   def connect
     begin
       @session = GoogleSpreadsheet.login(@user, @pass)
-      
+
       # select spreadsheet by key
       @ws = @session.spreadsheet_by_key(@key).worksheets[0]
 
@@ -21,7 +21,7 @@ class GdocsController
       abort("Authentication for #{@user} failed!")
     rescue GoogleSpreadsheet::Error
       abort("spreadsheet.google.com returned error!")
-    end  
+    end
   end
 
   # get array of records in worksheet
@@ -30,7 +30,7 @@ class GdocsController
 
     for row in 3..@ws.num_rows
       row_record = []
-      for col in 1..4
+      for col in 1..6
         row_record[col - 1] = @ws[row, col]
       end
       records[row] = row_record
@@ -47,7 +47,7 @@ class GdocsController
   def set_registro(row, status = "unavailable")
     @ws[row, 4] = status
   end
-  
+
   # set IP
   def set_ip(row, ip)
     @ws[row, 2] = ip
@@ -57,4 +57,18 @@ class GdocsController
   def save
     @ws.save
   end
+
+  # find duplicates
+  def find_duplicates(records)
+    tmp = []
+    records.sort.each do |k, v|
+      if tmp.include?(v[0])
+        @ws[k, 3] = "duplicated"
+        v[2] = "duplicated"
+      else
+        tmp << v[0]
+      end
+    end
+  end
 end
+

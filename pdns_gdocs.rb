@@ -18,58 +18,95 @@ require "gdocs_controller"
 require "pdns_controller"
 require "resolv"
 require "timeout"
+require "mail"
 
-config = YAML.load_file(File.expand_path(File.dirname(__FILE__)) + '/config.yml')
+error = nil
+record_failed = []
 
-gdoc = GdocsController.new(config["gmail"]["user"], config["gmail"]["pass"], config["gmail"]["key"])
-gdoc.connect
-records = gdoc.get_records
+begin
+	config = YAML.load_file(File.expand_path(File.dirname(__FILE__)) + '/config.yml')
 
-db = PdnsController.new(config["db"], config["pdns"])
+	gdoc = GdocsController.new(config["gmail"]["user"], config["gmail"]["pass"], config["gmail"]["key"])
+	gdoc.connect
+	records = gdoc.get_records
 
-resolver = Resolv::DNS.new(:nameserver => "127.0.0.1")
+	gdoc.find_duplicates(records)
 
-records.each do |key, record|
-  unless ARGV[0] == "--checkreg" || ARGV[0] == "-c"
-    db.del(record)  if ARGV[0] == "--force" || ARGV[0] == "-f"
+	db = PdnsController.new(config["db"], config["pdns"], config["mxgoogle"])
 
-    r = db.add(record)
-    
-    gdoc.set_registro(key) unless r.nil?
-    gdoc.set_ip(key, record[1]) unless r.nil? 
+	resolver = Resolv::DNS.new(:nameserver => "127.0.0.1")
 
-    unless r.nil? || record[2] == "failed"
-      succ = true
-      3.times do
-        begin
-          Timeout::timeout(3) do
-            resolver.getaddress(record[0])
-            succ = true
-          end
-        rescue
-          succ = false
-        end
-      end
+	records.each do |key, record|
+		next if record[2] == "duplicated"
 
-      if succ
-        gdoc.set_status(key)
-      else
-        gdoc.set_status(key, "failed")
-      end
-    end
-  end
-  
-  if ARGV[0] == "--checkreg" || ARGV[0] == "-c" || ARGV[0] == "--force" || ARGV[0] == "-f"
-    r = db.check_reg(record)
-    if r
-      gdoc.set_registro(key, "yes")
-    else
-      gdoc.set_registro(key, "NO")
-    end
-  end
+		unless ARGV[0] == "--checkreg" || ARGV[0] == "-c"
+		  db.del(record)  if ARGV[0] == "--force" || ARGV[0] == "-f"
 
+		  r = db.add(record)
+
+		  gdoc.set_registro(key) unless r.nil?
+		  gdoc.set_ip(key, record[1]) unless r.nil?
+
+		  if !r.nil? || record[2] == "failed"
+		    succ = true
+		    3.times do
+		      begin
+		        Timeout::timeout(3) do
+		          resolver.getaddress(record[0])
+		          succ = true
+		        end
+		      rescue
+		        succ = false
+		      end
+		    end
+
+		    if succ
+		      gdoc.set_status(key)
+		    else
+		      gdoc.set_status(key, "failed")
+		      record_failed << record[0]
+		    end
+		  end
+		end
+
+		if ARGV[0] == "--checkreg" || ARGV[0] == "-c" || ARGV[0] == "--force" || ARGV[0] == "-f"
+		  r = db.check_reg(record)
+		  if r
+		    gdoc.set_registro(key, "yes")
+		  else
+		    gdoc.set_registro(key, "NO")
+		  end
+		end
+	end
+
+	resolver.close
+
+	gdoc.save
+rescue => e
+	error = e.backtrace.join('\n')
+	mail = Mail.new do
+	  to       "#{config["alert_mails"].join(", ")}"
+	  subject  "Error - PowerDNS-Gdocs: #{Time.now.strftime("%m/%d/%Y %H:%M")}"
+	  body     error
+	end
+	mail.delivery_method :sendmail
+	mail.deliver
+	exit
 end
 
-resolver.close
+rFile = File.new("last.log", "a")
+rFile.write("#{Time.now.strftime("%m/%d/%Y %H:%M")} #{Dir.pwd} #{ARGV[0]}\n")
+rFile.close
 
-gdoc.save
+unless record_failed.empty?
+	msg_body =
+		"Local DNS request for following domains failed:\n#{record_failed.join("\n  ")}"
+  mail = Mail.new do
+    to       "#{config["alert_mails"].join(", ")}"
+    subject  "PowerDNS-Gdocs: #{Time.now.strftime("%m/%d/%Y %H:%M")}"
+    body     msg_body
+  end
+  mail.delivery_method :sendmail
+  mail.deliver
+end
+

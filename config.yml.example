@@ -12,7 +12,22 @@ db:
   username: "root"
   password: "root"
   encoding: "utf8"
-  
+
 # pdns config
 pdns:
   template: "name_of_template" # template that is used for generating record
+
+# alert mails
+alert_mails: ["example@example.example"]
+
+# MX google config
+mxgoogle:
+  "mx_record_content":
+    prio: priority
+    ttl: ttl
+
+  # example
+  # "aspmx.l.google.com":
+  #   prio: 1
+  #   ttl: 3600
+

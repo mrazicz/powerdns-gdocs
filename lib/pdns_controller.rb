@@ -2,22 +2,23 @@ class PdnsController
   require "data_mapper"
   require "models"
   require "resolv"
-  
+
   # constructor
-  def initialize(db, pdns)
+  def initialize(db, pdns, mxgoogle)
     DataMapper.setup(:default, {
       :adapter  => db["adapter"],
       :host     => db["host"],
       :username => db["username"],
       :password => db["password"],
       :database => db["database"]
-    })    
-    
+    })
+
     DataMapper.finalize
-    
+
     @templates = ZoneTempl.all(:name => pdns["template"]).zone_templ_records
+    @mxgoogle = mxgoogle
   end
-  
+
   # add new record to db
   def add(record)
     unless exist?(record[0])
@@ -26,8 +27,16 @@ class PdnsController
       for t in @templates
         new_record(t, domain, record)
       end
-      return record
 
+      if(record[4] == "yes")
+        @mxgoogle.each do |content, ttl_prio|
+          new_mx_record(domain, content, ttl_prio["ttl"], ttl_prio["prio"])
+        end
+
+        new_txt_record(domain, record[5]) unless record[5].empty?
+      end
+
+      return record
      end
 
     return nil
@@ -50,7 +59,7 @@ class PdnsController
       r = Resolv::DNS.new
       nservers = r.getresources(record[0], Resolv::DNS::Resource::IN::NS)
       template_ns = @templates.all(:type => "NS")
-      
+
       return false if template_ns.length != nservers.length
 
       nservers.each do |ns|
@@ -93,18 +102,18 @@ class PdnsController
 
     r.domain_id = domain.id
     r.name = subst(domain, template.name)
-    
+
     if template.type == "A" || template.type == "CNAME" || template.type == "AAAA"
       r.name += "." unless template.name.empty?
       r.name += domain.name
     end
-    
+
     r.type = template.type
-    
+
     if template.type == "A" || template.type == "AAAA"
       unless record[1].empty?
         r.content = record[1]
-      else 
+      else
         r.content = template.content
         record[1] = template.content
       end
@@ -115,7 +124,39 @@ class PdnsController
     r.ttl = template.ttl
     r.prio = template.prio
     r.change_date = Time.now.to_i
-    
+
+    r.save
+    return r
+  end
+
+  # create new MX google record in Record table
+  def new_mx_record(domain, content, ttl, prio)
+    r = Record.new
+
+    r.domain_id = domain.id
+    r.name = domain.name
+    r.type = "MX"
+    r.content = content
+    r.ttl = ttl
+    r.prio = prio
+    r.change_date = Time.now.to_i
+
+    r.save
+    return r
+  end
+
+  # create new TXT record in Record table
+  def new_txt_record(domain, content)
+    r = Record.new
+
+    r.domain_id = domain.id
+    r.name = domain.name
+    r.type = "TXT"
+    r.content = content
+    r.ttl = 3600
+    r.prio = 0
+    r.change_date = Time.now.to_i
+
     r.save
     return r
   end
@@ -127,3 +168,4 @@ class PdnsController
     return stext
   end
 end
+

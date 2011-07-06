@@ -2,6 +2,7 @@ GEM
   remote: http://rubygems.org/
   remote: http://rubygems.org/
   specs:
+    activesupport (3.0.9)
     addressable (2.2.6)
     bcrypt-ruby (2.1.4)
     data_mapper (1.1.0)
@@ -63,18 +64,29 @@ GEM
     google-spreadsheet-ruby (0.1.5)
       nokogiri (>= 1.4.3.1)
       oauth (>= 0.3.6)
+    i18n (0.5.0)
     json (1.4.6)
-    nokogiri (1.4.4)
-    oauth (0.4.4)
-    stringex (1.2.1)
+    mail (2.2.19)
+      activesupport (>= 2.3.6)
+      i18n (>= 0.4.0)
+      mime-types (~> 1.16)
+      treetop (~> 1.4.8)
+    mime-types (1.16)
+    nokogiri (1.5.0)
+    oauth (0.4.5)
+    polyglot (0.3.1)
+    stringex (1.2.2)
+    treetop (1.4.9)
+      polyglot (>= 0.3.1)
     uuidtools (2.1.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  data_mapper
+  data_mapper (>= 1.1)
   dm-mysql-adapter
   dm-postgres-adapter
   dm-sqlite-adapter
   google-spreadsheet-ruby
+  mail
