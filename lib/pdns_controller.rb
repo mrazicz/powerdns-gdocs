@@ -37,7 +37,9 @@ class PdnsController
       end
 
       return record
-     end
+    else
+      update(record)
+    end
 
     return nil
   end
@@ -74,6 +76,32 @@ class PdnsController
   # check if domain already exist
   def exist?(domain)
     Domain.all(:name => domain).any?
+  end
+
+  # update record
+  def update(record)
+    domain = Domain.all(:name => record[0]).last
+    dbrecords = Record.all(:domain_id => domain.id)
+
+    a_record = dbrecords.all(:type => 'A')[0]
+    a_record.update(:content => record[1]) \
+      if a_record.content != record[1] && a_record
+
+    mx_records = dbrecords.all(:type => 'MX')
+    mx_records.destroy if mx_records.any? && record[4].blank?
+    if record[4] == 'yes'
+      @mxgoogle.each do |content, ttl_prio|
+        mxr = mx_records.all(:content => record[4])[0]
+        new_mx_record(domain, content, ttl_prio["ttl"], ttl_prio["prio"]) \
+          unless mxr
+      end
+    end
+
+    txt_record = dbrecords.all(:type => 'TXT')[0]
+    txt_record.destroy if txt_record && record[5].blank?
+    txt_record.update(:content => record[5]) \
+      if txt_record && !record[5].blank? && txt_record.content != record[5]
+    new_txt_record(domain, record[5]) if !txt_record && !record[5].blank?
   end
 
   # create new record in Domain table

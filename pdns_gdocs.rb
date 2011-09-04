@@ -83,18 +83,22 @@ begin
 
 	gdoc.save
 rescue => e
-	error = e.backtrace.join('\n')
+	error = e.backtrace.join("\n")
 	mail = Mail.new do
 	  to       "#{config["alert_mails"].join(", ")}"
 	  subject  "Error - PowerDNS-Gdocs: #{Time.now.strftime("%m/%d/%Y %H:%M")}"
 	  body     error
 	end
+puts error; exit
 	mail.delivery_method :sendmail
 	mail.deliver
 	exit
 end
 
-rFile = File.new("last.log", "a")
+mod = '_checkreg' if ARGV[0] == "--checkreg" || ARGV[0] == "-c"
+mod = '_force'    if ARGV[0] == "--force"    || ARGV[0] == "-f"
+
+rFile = File.new("last#{mod}.log", "w")
 rFile.write("#{Time.now.strftime("%m/%d/%Y %H:%M")} #{Dir.pwd} #{ARGV[0]}\n")
 rFile.close
 
